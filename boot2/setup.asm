@@ -22,6 +22,7 @@ NEWSYSSEG 	equ 0x0000
 	int 	10h
 	jmp 	$
 ; 1) 
+	
 
 ; 2) Move system to 0x0000
 	mov 	ax, SYSSEG
