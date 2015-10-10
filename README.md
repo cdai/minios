@@ -1,2 +1,2 @@
-# minios
-A mini operating system kernel
+# MiniOS
+A Mini Operating System kernel implementation, just for fun :)
