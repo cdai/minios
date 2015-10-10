@@ -13,7 +13,7 @@ LD 		= ld
 LDFLAGS = -Ttext 0 -e main --oformat binary -s -x -M
 
 %.o:	%.c
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 %.o: 	%.asm
 	$(AS) $(ASFLAGS) -o $@ $<
@@ -24,7 +24,6 @@ LDFLAGS = -Ttext 0 -e main --oformat binary -s -x -M
 
 all:	Image
 
-#.PHONY : Image disk start clean
 
 Image:	boot1/bootsect boot2/setup system/system tools/build 	
 	tools/build boot1/bootsect boot2/setup system/system > a.bin
@@ -63,6 +62,8 @@ system/init/myprint.o: system/init/myprint.asm
 disk:
 	bximage -q -fd -size=1.44 Image
 
+.PHONY: disk
+
 
 #################
 # Start Bochs
@@ -71,6 +72,7 @@ disk:
 start:	Image
 	bochs -q -f bochsrc
 
+.PHONY: start
 
 #################
 # 	GitHub
@@ -83,4 +85,7 @@ start:	Image
 
 clean:
 	rm -f boot1/bootsect boot2/setup system/system tools/build 
+	rm -f system/**/*.o
 	rm -f a.bin tmp.asm System.map
+
+.PHONY: clean
