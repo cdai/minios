@@ -28,8 +28,6 @@ DA_C		equ	98h	; 存在的只执行代码段属性值
 ; 		Booting Process
 ; ############################
 
-	org 	90200h
-
 [SECTION .s16]
 [BITS 	16]
 LABEL_BEGIN:
@@ -54,24 +52,22 @@ LABEL_BEGIN:
 	mov		sp, 0100h
 
 	; 3.1) Init descriptor
-	;xor		eax, eax
-	;mov		ax, cs
-	;shl		eax, 4
-	;add		eax, LABEL_SEG_CODE32
-	mov 	eax, LABEL_SEG_CODE32
-	mov		word [LABEL_DESC_CODE32-200h + 2], ax
+	xor		eax, eax
+	mov		ax, cs
+	shl		eax, 4
+	add		eax, LABEL_SEG_CODE32
+	mov		word [LABEL_DESC_CODE32 + 2], ax
 	shr		eax, 16
-	mov		byte [LABEL_DESC_CODE32-200h + 4], al
-	mov		byte [LABEL_DESC_CODE32-200h + 7], ah
+	mov		byte [LABEL_DESC_CODE32 + 4], al
+	mov		byte [LABEL_DESC_CODE32 + 7], ah
 
 	; 3.2) Load gdt to gdtr
-	;xor		eax, eax
-	;mov		ax, ds
-	;shl		eax, 4
-	;add		eax, LABEL_GDT			; eax <- gdt base addr
-	mov 	eax, LABEL_GDT
-	mov		dword [GdtPtr-200h + 2], eax	; [GdtPtr + 2] <- gdt base addr
-	lgdt	[GdtPtr-200h]
+	xor		eax, eax
+	mov		ax, ds
+	shl		eax, 4
+	add		eax, LABEL_GDT			; eax <- gdt base addr
+	mov		dword [GdtPtr + 2], eax	; [GdtPtr + 2] <- gdt base addr
+	lgdt	[GdtPtr]
 
 	; 3.3) Disable interrupt
 	cli
