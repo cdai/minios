@@ -8,11 +8,13 @@ NEWSYSSEG 	equ 0x0000
 
 ; 描述符类型
 DA_32		equ	4000h	; 32 位段
+DA_LIMIT_4K	equ	8000h	; 段界限粒度为 4K 字节
 
 ; 存储段描述符类型
 DA_DR		equ	90h	; 存在的只读数据段类型值
 DA_DRW		equ	92h	; 存在的可读写数据段属性值
 DA_C		equ	98h	; 存在的只执行代码段属性值
+DA_CR		equ	9Ah	; 存在的可执行可读代码段属性值
 
 ; Descriptor macro
 %macro Descriptor 3
@@ -83,9 +85,10 @@ LABEL_BEGIN:
 	mov		cr0, eax
 
 	; 3.6) Jump to protective mode!
-	jmp		dword SelectorCode32:0	; SelectorCode32 (Code32Selector:0)
+	jmp		dword SelectorCode32:0	; SelectorCode32 (LABEL_SEG_CODE32:0)
 
 [SECTION .s32]
+ALIGN	32
 [BITS 	32]
 LABEL_SEG_CODE32:
 	mov 	ax, SelectorVideo
@@ -95,16 +98,24 @@ LABEL_SEG_CODE32:
 	mov 	al, 'P'
 	mov 	[gs:edi], ax
 
-	jmp 	$
-
-SegCode32Len equ $ - LABEL_SEG_CODE32
+	;jmp 	$
 
 ; 4) Jump to system
+	mov 	ax, cs
+	mov 	ds, ax
+	mov 	es, ax
+	;mov 	ss, ax
+	mov 	esp, 1000h
+
+	jmp 	SelectorSystem:0
+
+SegCode32Len equ $ - LABEL_SEG_CODE32
 
 [SECTION .gdt]
 ;                            Base Addr,        Limit, 	Attribute
 LABEL_GDT:	   		Descriptor       0,            0, 0
-LABEL_DESC_CODE32: 	Descriptor       0, SegCode32Len, DA_C + DA_32
+LABEL_DESC_CODE32: 	Descriptor       0, 	  0ffffh, DA_CR  | DA_32 | DA_LIMIT_4K
+LABEL_DESC_SYSTEM:	Descriptor       0,       0ffffh, DA_DRW | DA_32 | DA_LIMIT_4K
 LABEL_DESC_VIDEO:  	Descriptor 0B8000h,       0ffffh, DA_DRW
 
 GdtLen		equ	$ - LABEL_GDT
@@ -112,8 +123,8 @@ GdtPtr		dw	GdtLen - 1					; GDT limit
 			dd	0							; GDT base addr
 
 SelectorCode32		equ	LABEL_DESC_CODE32 - LABEL_GDT
+SelectorSystem		equ	LABEL_DESC_SYSTEM - LABEL_GDT
 SelectorVideo		equ	LABEL_DESC_VIDEO - LABEL_GDT
-
 
 BootMessage:			
 	db 	13,10
