@@ -33,3 +33,9 @@
 
 # Image
 Image
+System.map
+boot1/bootsect
+boot2/setup
+system/system
+tools/build
+

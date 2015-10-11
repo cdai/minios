@@ -81,6 +81,9 @@ qemu: 	Image
 # 	GitHub
 #################
 
+commit:
+	git add .
+	git commit -m "$(MSG)"
 
 #################
 # 	Clean
