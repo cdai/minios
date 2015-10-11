@@ -15,8 +15,8 @@ LDFLAGS = -Ttext 0 -e main --oformat binary -s -x -M
 %.o:	%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-%.o: 	%.asm
-	$(AS) $(ASFLAGS) -o $@ $<
+#%.o: 	%.asm
+#	$(AS) $(ASFLAGS) -o $@ $<
 
 #################
 # 	Default
@@ -53,7 +53,7 @@ system/system:	system/init/main.o system/init/myprint.o
 system/init/main.o:	system/init/main.c
 
 system/init/myprint.o: system/init/myprint.asm
-
+	$(AS) $(ASFLAGS) -o $@ $<
 
 #################
 # Create floppy
@@ -66,11 +66,14 @@ disk:
 
 
 #################
-# Start Bochs
+# 	Start Vm
 #################
 
 start:	Image
 	bochs -q -f bochsrc
+
+qemu: 	Image
+	qemu-system-x86_64 -m 16M -boot a -fda Image
 
 .PHONY: start
 
