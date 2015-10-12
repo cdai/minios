@@ -10,21 +10,21 @@ CFLAGS	= -Wall -O
 LD 		= ld
 # -Ttext org -e entry -s(omit all symbol info)
 # -x(discard all local symbols) -M(print memory map)
-LDFLAGS = -Ttext 0 -e main --oformat binary -s -x -M
+LDFLAGS = -Ttext 10000 -e main --oformat binary -s -x -M
 
 %.o:	%.c
-	$(CC) $(CFLAGS) -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
-%.o: 	%.asm
-	$(AS) $(ASFLAGS) -o $@ $<
+#%.o: 	%.asm
+#	$(AS) $(ASFLAGS) -o $@ $<
+
 
 #################
-# 	Default
+# Default
 #################
 
 all:	Image
 
-#.PHONY : Image disk start clean
 
 Image:	boot1/bootsect boot2/setup system/system tools/build 	
 	tools/build boot1/bootsect boot2/setup system/system > a.bin
@@ -54,6 +54,7 @@ system/system:	system/init/main.o system/init/myprint.o
 system/init/main.o:	system/init/main.c
 
 system/init/myprint.o: system/init/myprint.asm
+	$(AS) $(ASFLAGS) -o $@ $<
 
 
 #################
@@ -63,24 +64,54 @@ system/init/myprint.o: system/init/myprint.asm
 disk:
 	bximage -q -fd -size=1.44 Image
 
+.PHONY: disk
+
 
 #################
-# Start Bochs
+# Start Vm
 #################
 
 start:	Image
 	bochs -q -f bochsrc
 
+qemu: 	Image
+	qemu-system-x86_64 -m 16M -boot a -fda Image
+
+.PHONY: start qemu
+
 
 #################
-# 	GitHub
+# GitHub
 #################
+
+disasm-b1: boot1/bootsect
+	ndisasm $< | grep -v "0000 "
+
+disasm-b2: boot2/setup
+	ndisasm $< | grep -v "0000 "
+
+disasm-sys: system/system
+	objdump -b binary -m i386 -D $<
+
+.PHONY: disasm-b1 disasm-b2 disasm-sys
 
 
 #################
-# 	Clean
+# GitHub
+#################
+
+commit:
+	git add .
+	git commit -m "$(MSG)"
+
+
+#################
+# Clean
 #################
 
 clean:
 	rm -f boot1/bootsect boot2/setup system/system tools/build 
+	rm -f system/**/*.o
 	rm -f a.bin tmp.asm System.map
+
+.PHONY: clean

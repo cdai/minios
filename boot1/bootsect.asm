@@ -33,7 +33,7 @@ go:
 	mov 	ss, ax
 	mov 	sp, 0xff00 		; arbitrary value >> 512
 
-; 2) Load setup module
+; 2) Load setup module at 0x90200
 load_setup:
 	mov 	dx, 0000h		; dx 	= driver(dh)/head(dl)
 	mov 	cx, 0002h		; cx 	= track(ch)/sector(cl)
@@ -48,7 +48,7 @@ load_setup:
 	int 	13h
 	jmp 	load_setup 		
 
-; 3) Display message
+; 3) Display loading message
 ok_load_setup:
 	mov 	ah, 03h 		; read cursur position
 	xor 	bh, bh
@@ -62,7 +62,7 @@ ok_load_setup:
 	mov 	dl, 0h
 	int 	10h
 
-; 4) Load system module
+; 4) Load system module at 0x10000
 load_system:
 	mov 	ax, SYSSEG
 	mov 	es, ax
@@ -82,7 +82,6 @@ load_system:
 ; 5) Jump to setup
 ok_load_system:
 	jmp 	SETUPSEG:0h
-	;jmp 	SYSSEG:0h
 
 ; ############################
 ; 			Message
