@@ -10,6 +10,10 @@ ALIGN   32
 [BITS   32]
 
 startup_32:
+	mov 	ax, 16
+	mov 	ds, ax
+	mov 	es, ax
+
         mov     ax, 24 		; SelectorVideo
      	mov     gs, ax
 	mov 	ah, 0Ch
