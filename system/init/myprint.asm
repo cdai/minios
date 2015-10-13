@@ -18,17 +18,19 @@ myprint:
 	mov 	ah, 0Ch
 	mov 	ebx, 0
 	mov 	ecx, [esp+8]
+	mov 	edx, [esp+4]
      	;mov    edi, (80 * 11 + 79) * 2
 
 .loop:
 	mov 	edi, ebx
 	add 	edi, (80 * 20)
 	imul 	edi, 2
-     	mov     al, 'X' ; byte [esp+4]
+     	mov     al, byte [edx] ;'X' 
      	mov     [gs:edi], ax
 
 	inc 	ebx
 	dec 	ecx
+	inc 	edx
 	cmp 	ecx, 0h
 	jne 	.loop
 
