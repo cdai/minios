@@ -13,13 +13,24 @@ myprint:
 	;mov 	dl, 0h
 	;int 	10h
 
-        mov     ax, 24 		; SelectorVideo
+        mov     ax, 32 		; SelectorVideo
      	mov     gs, ax
-     	mov     edi, (80 * 11 + 79) * 2
+	mov 	ah, 0Ch
+	mov 	ebx, 0
 	mov 	ecx, [esp+8]
-     	mov     ah, 0Ch
-     	mov     al, byte [esp+4]
+     	;mov    edi, (80 * 11 + 79) * 2
+
+.loop:
+	mov 	edi, ebx
+	add 	edi, (80 * 20)
+	imul 	edi, 2
+     	mov     al, 'X' ; byte [esp+4]
      	mov     [gs:edi], ax
+
+	inc 	ebx
+	dec 	ecx
+	cmp 	ecx, 0h
+	jne 	.loop
 
 	jmp 	$
 
