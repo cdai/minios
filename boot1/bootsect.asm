@@ -1,6 +1,6 @@
 
 ; ############################
-; 			Constants
+; 	Constants
 ; ############################
 
 SETUPLEN 	equ 4
@@ -11,7 +11,7 @@ SYSSEG 		equ 0x1000
 
 
 ; ############################
-; 		Booting Process
+; 	Booting Process
 ; ############################
 
 	org		07c00h
@@ -84,7 +84,7 @@ ok_load_system:
 	jmp 	SETUPSEG:0h
 
 ; ############################
-; 			Message
+; 	Message
 ; ############################
 
 msg1:		
@@ -92,5 +92,5 @@ msg1:
 	db 	"Loading system..."
 	db 	13,10				; CRLF
 
-times 	510-($-$$) 		db	0
+times 	510-($-$$) 	db	0
 	dw 		0xaa55
