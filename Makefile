@@ -3,20 +3,20 @@
 # Macro & Rule
 #################
 
-AS 		= nasm
-ASFLAGS = -f elf
-CC		= gcc
+AS 	= nasm
+ASFLAGS	= -f elf
+CC	= gcc
 CFLAGS	= -Wall -O
-LD 		= ld
+LD 	= ld
 # -Ttext org -e entry -s(omit all symbol info)
 # -x(discard all local symbols) -M(print memory map)
-LDFLAGS = -Ttext 10000 -e main --oformat binary -s -x -M
+LDFLAGS = -Ttext 0 -e startup_32 --oformat binary -s -x -M
 
 %.o:	%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-#%.o: 	%.asm
-#	$(AS) $(ASFLAGS) -o $@ $<
+%.o: 	%.asm
+	$(AS) $(ASFLAGS) -o $@ $<
 
 
 #################
@@ -45,16 +45,15 @@ boot1/bootsect:	boot1/bootsect.asm system/system
 boot2/setup:	boot2/setup.asm
 	$(AS) -o $@ $<
 
-system/system:	system/init/main.o system/init/myprint.o
+system/system:	system/init/head.o system/init/main.o
 	$(LD) $(LDFLAGS) \
+	system/init/head.o \
 	system/init/main.o \
-	system/init/myprint.o \
 	-o $@ > System.map
 
-system/init/main.o:	system/init/main.c
+system/init/head.o: 	system/init/head.asm
 
-system/init/myprint.o: system/init/myprint.asm
-	$(AS) $(ASFLAGS) -o $@ $<
+system/init/main.o:	system/init/main.c
 
 
 #################
