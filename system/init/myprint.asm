@@ -19,13 +19,12 @@ myprint:
 	mov 	ebx, 0
 	mov 	ecx, [esp+8]
 	mov 	edx, [esp+4]
-     	;mov    edi, (80 * 11 + 79) * 2
 
 .loop:
 	mov 	edi, ebx
-	add 	edi, (80 * 20)
+	add 	edi, (80 * 20) ; (80 * row + col) * 2
 	imul 	edi, 2
-     	mov     al, byte [edx] ;'X' 
+     	mov     al, byte [edx]
      	mov     [gs:edi], ax
 
 	inc 	ebx
