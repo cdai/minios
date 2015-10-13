@@ -91,12 +91,6 @@ LABEL_BEGIN:
 ALIGN	32
 [BITS 	32]
 LABEL_SEG_CODE32:
-	mov 	ax, SelectorVideo
-	mov 	gs, ax
-	mov 	edi, (80 * 11 + 79) * 2
-	mov 	ah, 0Ch
-	mov 	al, 'P'
-	mov 	[gs:edi], ax
 
 ; 4) Jump to system
 	mov 	ax, SelectorData
