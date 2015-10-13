@@ -57,9 +57,9 @@ LABEL_BEGIN:
 	xor		eax, eax
 	mov		ax, ds
 	shl		eax, 4
-	add		eax, LABEL_GDT		; eax <- gdt base addr
+	add		eax, LABEL_GDT			; eax <- gdt base addr
 	mov		dword [GdtPtr + 2], eax	; [GdtPtr + 2] <- gdt base addr
-	lgdt		[GdtPtr]
+	lgdt 	[GdtPtr]
 
 	; 3.2) Disable interrupt
 	cli
@@ -71,7 +71,7 @@ LABEL_BEGIN:
 
 	; 3.4) Set PE in cr0
 	mov		eax, cr0
-	or		eax, 1
+	or 		eax, 1
 	mov		cr0, eax
 
 	; 3.5) Jump to protective mode!
