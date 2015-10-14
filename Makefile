@@ -36,6 +36,7 @@ tools/build:	tools/build.c
 	$(CC) $(CFLAGS) -o $@ $<
 
 # SYSSIZE= number of clicks (16 bytes) to be loaded
+# 	that is max segment address of system
 boot1/bootsect:	boot1/bootsect.asm include/var.inc system/system
 	(echo -n "SYSSIZE equ (";ls -l system/system | grep system \
 		| cut -d " " -f 5 | tr '\012' ' '; echo "+ 15 ) / 16") > tmp.asm

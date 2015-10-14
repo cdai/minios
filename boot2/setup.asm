@@ -73,8 +73,3 @@ GdtPtr		dw	GdtLen - 1		; GDT limit
 SelectorSystem	equ	LABEL_DESC_SYSTEM - LABEL_GDT
 SelectorData 	equ	LABEL_DESC_DATA - LABEL_GDT
 SelectorVideo	equ	LABEL_DESC_VIDEO - LABEL_GDT
-
-BootMessage:			
-	db 	13,10
-	db 	"In setup!"
-	db 	13,10
