@@ -1,4 +1,7 @@
 
+%include "var.inc"
+%include "pm.inc"
+
 [section .data]
 
 ;[section .text]

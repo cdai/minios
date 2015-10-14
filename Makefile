@@ -4,6 +4,7 @@
 #################
 
 AS 	= nasm
+ASINC	= -I include/
 ASFLAGS	= -f elf
 CC	= gcc
 CFLAGS	= -Wall -O
@@ -39,11 +40,11 @@ boot1/bootsect:	boot1/bootsect.asm system/system
 	(echo -n "SYSSIZE equ (";ls -l system/system | grep system \
 		| cut -d " " -f 5 | tr '\012' ' '; echo "+ 15 ) / 16") > tmp.asm
 	cat $< >> tmp.asm
-	$(AS) -o $@ tmp.asm
+	$(AS) $(ASINC) -o $@ tmp.asm
 	rm -f tmp.asm
 
 boot2/setup:	boot2/setup.asm
-	$(AS) -o $@ $<
+	$(AS) $(ASINC) -o $@ $<
 
 system/system:	system/init/head.o system/init/main.o
 	$(LD) $(LDFLAGS) \
@@ -52,6 +53,7 @@ system/system:	system/init/head.o system/init/main.o
 	-o $@ > System.map
 
 system/init/head.o: 	system/init/head.asm
+	$(AS) $(ASFLAGS) $(ASINC) -o $@ $<
 
 system/init/main.o:	system/init/main.c
 
