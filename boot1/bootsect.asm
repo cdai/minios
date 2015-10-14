@@ -1,6 +1,5 @@
 
 %include "var.inc"
-%include "pm.inc"
 
 ; ############################
 ; 	Booting Process

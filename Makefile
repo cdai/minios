@@ -36,14 +36,14 @@ tools/build:	tools/build.c
 	$(CC) $(CFLAGS) -o $@ $<
 
 # SYSSIZE= number of clicks (16 bytes) to be loaded
-boot1/bootsect:	boot1/bootsect.asm system/system
+boot1/bootsect:	boot1/bootsect.asm include/var.inc system/system
 	(echo -n "SYSSIZE equ (";ls -l system/system | grep system \
 		| cut -d " " -f 5 | tr '\012' ' '; echo "+ 15 ) / 16") > tmp.asm
 	cat $< >> tmp.asm
 	$(AS) $(ASINC) -o $@ tmp.asm
 	rm -f tmp.asm
 
-boot2/setup:	boot2/setup.asm
+boot2/setup:	boot2/setup.asm include/var.inc include/pm.inc
 	$(AS) $(ASINC) -o $@ $<
 
 system/system:	system/init/head.o system/init/main.o
@@ -52,7 +52,7 @@ system/system:	system/init/head.o system/init/main.o
 	system/init/main.o \
 	-o $@ > System.map
 
-system/init/head.o: 	system/init/head.asm
+system/init/head.o: 	system/init/head.asm include/var.inc include/pm.inc
 	$(AS) $(ASFLAGS) $(ASINC) -o $@ $<
 
 system/init/main.o:	system/init/main.c

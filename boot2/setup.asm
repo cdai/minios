@@ -15,7 +15,7 @@ LABEL_BEGIN:
 	mov 	ds, ax			; save to bootsect space
 	mov 	ah, 0x88
 	int 	0x15
-	mov 	[0], ax			; ax=3c00h (15360kb=15mb)
+	mov 	[MEMSIZE], ax		; ax=3c00h (15360kb=15mb)
 
 ; 2) Move system to 0x0000
 	mov 	ax, SYSSEG
