@@ -4,9 +4,10 @@
 
 extern main
 
-[SECTION .data]
-
 global startup_32
+
+pg_dir:
+
 
 [SECTION .text]
 ALIGN   32
@@ -17,7 +18,7 @@ startup_32:
 	mov 	ds, ax
 	mov 	es, ax
 
-; 1) Output welcome message
+; 1) Print welcome message
 	mov     ax, 24 		; SelectorVideo
 	mov     gs, ax
 	mov 	ah, 0Ch
@@ -49,13 +50,35 @@ startup_32:
 	ret
 
 
-[SECTION .data]
+; Temporary data and stack, will be overriden later
 Message:
 	db 	"Welcome to MiniOS"
 len 	equ $ - Message
 
 times 	100h 	db 	0
 TopOfStack 	equ	$ 
+
+
+; LinearAddr[31~22] = 10 bits = 1024 entry (* 4B = 4096B)
+; So pg_dir has 1024 entries (1024 page tables)
+; LinearAddr[12~21] = 10 bits = 1024 entry (* 4B = 4096B)
+; So pg has 1024 entries
+DirSize 	equ 	4096
+PageSize 	equ 	4096
+
+times 	DirSize-($-$$) 	db 0
+
+pg0:
+times 	PageSize 	db 0
+
+pg1:
+times 	PageSize 	db 0
+
+pg2:
+times 	PageSize 	db 0
+
+pg3:
+times 	PageSize 	db 0
 
 
 [SECTION .gdt]

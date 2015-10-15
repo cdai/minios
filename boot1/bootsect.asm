@@ -68,6 +68,7 @@ LEFT_IN_TRACK1 	equ SECT_PER_TRACK - 1 - SETUPLEN
 load_system:
 	mov 	ax, SYSSEG
 	mov 	es, ax
+	mov 	bx, 0000h		; es:bx = target(es=1000h,bx=0)
 	mov 	dx, 0000h		; dx 	= driver(dh)/head(dl)
 	mov 	cx, 0006h		; cx 	= track(ch)/sector(cl)
 
@@ -80,20 +81,26 @@ load_system:
 	jbe 	.loop
 	mov 	al, LEFT_IN_TRACK1 	; al 	= (al <= 13) ? al : 13
 .loop
-	sub 	byte [Sector], al	; update remaining sector
-	mov 	ch, byte [Track]
-	mov 	bx, 00h			; es:bx = target(es=1000h,bx=0)
 	mov 	ah, 02h			; ah 	= service id(ah=02 means read)
 	int 	13h			; ignore any error
 
-	cmp 	byte [Sector], 0 	; jump out if no remaining sector
+	sub 	byte [Sector], al	; remainingSector -= al
+	cmp 	byte [Sector], 0
 	je 	ok_load_system
 
-	mov 	al, byte [Sector] 	; continue to next track
+	xor 	ah, ah
+	shl 	ax, 9
+	add 	bx, ax			; offset += (al * 512)
+
+	add 	byte [Track], 1 	
+	mov 	ch, byte [Track]	; track++
+	mov 	cl, 1 			; start at first sector
+
+	xor 	ax, ax
+	mov 	al, byte [Sector]
 	cmp 	al, SECT_PER_TRACK
 	jbe 	.loop
 	mov 	al, SECT_PER_TRACK 	; al 	= (al <= 18) ? al : 18
-	add 	byte [Track], 1
 	jmp 	.loop
 
 ; 5) Kill motor
