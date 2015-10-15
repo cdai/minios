@@ -1,8 +1,6 @@
 
 %include "var.inc"
 
-SYSEND 	equ 	SYSSEG + SYSSIZE
-
 ; ############################
 ; 	Booting Process
 ; ############################
@@ -18,8 +16,8 @@ SYSEND 	equ 	SYSSEG + SYSSIZE
 	xor 	si, si 			; ds:si = source
 	xor 	di, di 			; es:di = target
 	rep 	movsw 			; move word by word
-	jmp 	INITSEG:go-$$ 		; far jump!
-go:
+	jmp 	INITSEG:ok_move-$$ 	; far jump!
+ok_move:
 	mov 	ax, cs 			; re-init registers
 	mov 	ds, ax
 	mov 	es, ax
@@ -54,35 +52,57 @@ ok_load_setup:
 					; 	  attribute(bl=7 white fg and black bg)
 	mov 	dl, 0h
 	int 	10h
+	jmp 	load_system
 
 ; 4) Load system module at 0x10000
-;    assume SYSSIZE locate in 1 track (18 sectors * 512b)
+;    Assume SYSSIZE < 1 head 
+;    1 track = 18 sectors * 512b = 9216(b)
+;    1 head = 80 tracks * 9216 = 720(kb)
+_Sector: 	db 0
+_Track: 	db 0
+Sector 		equ _Sector-$$
+Track 		equ _Track-$$
+SECT_PER_TRACK 	equ 18
+LEFT_IN_TRACK1 	equ SECT_PER_TRACK - 1 - SETUPLEN
+
 load_system:
 	mov 	ax, SYSSEG
 	mov 	es, ax
 	mov 	dx, 0000h		; dx 	= driver(dh)/head(dl)
 	mov 	cx, 0006h		; cx 	= track(ch)/sector(cl)
-	mov 	bx, 00h			; es:bx = target(es=1000h,bx=0)
+
 	mov 	ax, SYSSIZE
-	shl	ax, 4
-	shr 	ax, 9			; al 	= (SYSSIZE << 4) / 512, sectors to read
+	add 	ax, 511
+	shr 	ax, 9			; al 	= (SYSSIZE + 511) / 512, sectors to read
+	mov 	byte [Sector], al
+
+	cmp 	al, LEFT_IN_TRACK1
+	jbe 	.loop
+	mov 	al, LEFT_IN_TRACK1 	; al 	= (al <= 13) ? al : 13
+.loop
+	sub 	byte [Sector], al	; update remaining sector
+	mov 	ch, byte [Track]
+	mov 	bx, 00h			; es:bx = target(es=1000h,bx=0)
 	mov 	ah, 02h			; ah 	= service id(ah=02 means read)
-	;mov 	al, 01h 		; al 	= number of sectors to read(al)
-	int 	13h
-	jnc 	ok_load_system
-	
-	xor 	dl, dl			; reset floppy and retry if failed
-	xor 	ah, ah
-	int 	13h
-	jmp 	load_system
+	int 	13h			; ignore any error
+
+	cmp 	byte [Sector], 0 	; jump out if no remaining sector
+	je 	ok_load_system
+
+	mov 	al, byte [Sector] 	; continue to next track
+	cmp 	al, SECT_PER_TRACK
+	jbe 	.loop
+	mov 	al, SECT_PER_TRACK 	; al 	= (al <= 18) ? al : 18
+	add 	byte [Track], 1
+	jmp 	.loop
 
 ; 5) Kill motor
+ok_load_system:
 	mov 	dx, 0x3f2		; floppy controller port
 	mov 	al, 0			; floppy A
 	outb				; output al to dx port
 
 ; 6) Jump to setup
-ok_load_system:
 	jmp 	SETUPSEG:0h
 
 ; ############################

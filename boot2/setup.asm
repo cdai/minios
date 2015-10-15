@@ -8,7 +8,6 @@
 
 [SECTION .s16]
 [BITS 	16]
-LABEL_BEGIN:
 
 ; 1) Read memory info from BIOS
 	mov 	ax, INITSEG
@@ -18,45 +17,57 @@ LABEL_BEGIN:
 	mov 	[MEMSIZE], ax		; ax=3c00h (15360kb=15mb)
 
 ; 2) Move system to 0x0000
-	mov 	ax, SYSSEG
-	mov 	ds, ax
-	mov 	ax, NEWSYSSEG
+;    round-1: 10000~1ffff => 0000~ffff
+;       ...
+;    round-5: 80000~8ffff => 70000~7ffff
+; 
+; NOTE: 8000h word = 10000h byte
+WordPerMove 	equ 8000h
+
+move_system:
+	mov 	ax, 0h
+.loop
 	mov 	es, ax
-	mov 	cx, 1000h 		; cx 	= counter
+	add 	ax, 1000h
+	mov 	ds, ax
+	mov 	cx, WordPerMove 	; cx 	= counter
 	xor 	si, si 			; ds:si = source
 	xor 	di, di 			; es:di = target
-	rep 	movsw 			; move word by word
+	rep 	movsw 			; move
+
+	cmp 	ax, INITSEG
+	jne 	.loop
 
 ; 3) Enter protection mode
-	mov		ax, cs
-	mov		ds, ax
-	mov		es, ax
-	mov		ss, ax
-	mov		sp, 0100h
+	mov 	ax, cs
+	mov 	ds, ax
+	mov 	es, ax
+	mov 	ss, ax
+	mov 	sp, 0100h
 
 	; 3.1) Load gdt to gdtr
-	xor		eax, eax
-	mov		ax, ds
-	shl		eax, 4
-	add		eax, LABEL_GDT			; eax <- gdt base addr
-	mov		dword [GdtPtr + 2], eax	; [GdtPtr + 2] <- gdt base addr
+	xor 	eax, eax
+	mov 	ax, ds
+	shl 	eax, 4
+	add 	eax, LABEL_GDT		; eax <- gdt base addr
+	mov 	dword [GdtPtr + 2], eax	; [GdtPtr + 2] <- gdt base addr
 	lgdt 	[GdtPtr]
 
 	; 3.2) Disable interrupt
 	cli
 
 	; 3.3) Enable A20 addr line
-	in		al, 92h
-	or		al, 00000010b
-	out		92h, al
+	in 	al, 92h
+	or 	al, 00000010b
+	out 	92h, al
 
 	; 3.4) Set PE in cr0
-	mov		eax, cr0
-	or 		eax, 1
-	mov		cr0, eax
+	mov 	eax, cr0
+	or  	eax, 1
+	mov 	cr0, eax
 
 	; 3.5) Jump to protective mode!
-	jmp		dword SelectorSystem:0	; 0x0000:0x0
+	jmp 	dword SelectorSystem:0	; 0x0000:0x0
 
 
 [SECTION .gdt]
