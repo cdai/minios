@@ -55,15 +55,10 @@ ok_load_setup:
 	jmp 	load_system
 
 ; 4) Load system module at 0x10000
-;    Assume SYSSIZE < 1 head 
+;    Assume SYSSIZE < 72 track (36864)
 ;    1 track = 18 sectors * 512b = 9216(b)
 ;    1 head = 80 tracks * 9216 = 720(kb)
-_Sector: 	db 0
-_Track: 	db 0
-Sector 		equ _Sector-$$
-Track 		equ _Track-$$
-SECT_PER_TRACK 	equ 18
-LEFT_IN_TRACK1 	equ SECT_PER_TRACK - 1 - SETUPLEN
+MAX_ONE_READ 	equ 72
 
 load_system:
 	mov 	ax, SYSSEG
@@ -74,34 +69,14 @@ load_system:
 
 	mov 	ax, SYSSIZE
 	add 	ax, 511
-	shr 	ax, 9			; al 	= (SYSSIZE + 511) / 512, sectors to read
-	mov 	byte [Sector], al
+	shr 	ax, 9			; al 	= (SYSSIZE + 511) / 512 sectors to read
 
-	cmp 	al, LEFT_IN_TRACK1
+	cmp 	al, MAX_ONE_READ
 	jbe 	.loop
-	mov 	al, LEFT_IN_TRACK1 	; al 	= (al <= 13) ? al : 13
+	mov 	al, MAX_ONE_READ 	; al 	= (al <= 72) ? al : 72
 .loop
 	mov 	ah, 02h			; ah 	= service id(ah=02 means read)
 	int 	13h			; ignore any error
-
-	sub 	byte [Sector], al	; remainingSector -= al
-	cmp 	byte [Sector], 0
-	je 	ok_load_system
-
-	xor 	ah, ah
-	shl 	ax, 9
-	add 	bx, ax			; offset += (al * 512)
-
-	add 	byte [Track], 1 	
-	mov 	ch, byte [Track]	; track++
-	mov 	cl, 1 			; start at first sector
-
-	xor 	ax, ax
-	mov 	al, byte [Sector]
-	cmp 	al, SECT_PER_TRACK
-	jbe 	.loop
-	mov 	al, SECT_PER_TRACK 	; al 	= (al <= 18) ? al : 18
-	jmp 	.loop
 
 ; 5) Kill motor
 ok_load_system:
