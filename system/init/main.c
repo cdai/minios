@@ -1,7 +1,8 @@
+#include "proc.h"
 
 int main(void)
 {
-	//myprint("Hello, MiniOS!\n", 15);
+	sched_init();
 	return 0;
 }
 
