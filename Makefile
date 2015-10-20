@@ -61,6 +61,8 @@ system/init/head.o: 	system/init/head.asm include/var.inc include/pm.inc
 # Disassemble
 #################
 
+# sed /q: match to that line then QUIT
+# append "cc -MM" output to the end
 dep:
 	sed '/\#\#\# Dependencies/q' < Makefile > tmp.make
 	$(CC) $(CFLAGS) -MM system/**/*.c >> tmp.make
@@ -131,5 +133,5 @@ clean:
 
 
 ### Dependencies
-main.o: system/init/main.c include/proc.h
-proc.o: system/kernel/proc.c include/proc.h
+main.o: system/init/main.c include/proc.h include/type.h
+proc.o: system/kernel/proc.c include/proc.h include/type.h
