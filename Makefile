@@ -65,6 +65,7 @@ dep:
 	sed '/\#\#\# Dependencies/q' < Makefile > tmp.make
 	$(CC) $(CFLAGS) -MM system/**/*.c >> tmp.make
 	cp -f tmp.make Makefile
+	rm -f tmp.make
 
 .PHONY: dep
 
