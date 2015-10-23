@@ -18,8 +18,21 @@ static union task_union init_task = { INIT_TASK, };
 /* The pointer to PCB(task_struct array) */
 struct task_struct *task[NR_TASKS] = { &(init_task.task), };
 
-/* The stack for kernel code */
+/* 
+ * The stack for kernel code. 
+ * The user stack for task-0/1
+ */
 long user_stack[PAGE_SIZE >> 2];
+
+/* 
+ * Struct for "lss stack_start,%esp" at head.asm 
+ *  stack_start[0~31]  => %esp 	(user_stack)
+ *  stack_start[32~47] => ss	(SelectorData)
+ */
+struct {
+	u32 	*a;
+	u16 	b;
+} stack_start = { user_stack, 0x10 };
 
 
 void sched_init()

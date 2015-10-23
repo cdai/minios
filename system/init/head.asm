@@ -2,7 +2,7 @@
 %include "var.inc"
 %include "pm.inc"
 
-extern main
+extern main,stack_start
 
 global gdt,pdt
 global startup_32
@@ -19,7 +19,7 @@ startup_32:
 	mov 	ds, ax
 	mov 	es, ax
 	mov 	ss, ax
-	mov 	esp, TopOfStack
+	lss 	esp, [stack_start]
 
 ; 1) Print welcome message
 	mov     ax, 24 		; SelectorVideo
