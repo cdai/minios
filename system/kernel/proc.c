@@ -2,6 +2,7 @@
 #include "mm.h" 		/* PAGE_SIZE */
 #include "system.h" 		/* set_tss/ldt_desc */
 #include "io.h" 		/* outb,outb_p */
+#include "syscall.h" 		/* system_call_table */
 
 /*
  * 1 page:
