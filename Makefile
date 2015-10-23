@@ -13,7 +13,7 @@ LD 	= ld
 # -x(discard all local symbols) -M(print memory map)
 LDFLAGS = -Ttext 0 -e startup_32 --oformat binary -s -x -M
 
-OBJS 	= system/init/head.o system/init/main.o system/kernel/proc.o
+OBJS 	= system/init/head.o system/kernel/proc.o system/init/main.o 
 
 %.o:	%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -133,5 +133,6 @@ clean:
 
 
 ### Dependencies
-main.o: system/init/main.c include/proc.h include/type.h
-proc.o: system/kernel/proc.c include/proc.h include/type.h
+main.o: system/init/main.c include/proc.h include/type.h include/head.h
+proc.o: system/kernel/proc.c include/proc.h include/type.h include/head.h \
+  include/mm.h include/system.h

@@ -6,7 +6,7 @@ typedef struct desc_struct {
 	u32 	b;
 } desc_table[256];
 
-extern u32 pg_dir[1024];
+extern u32 pdt[1024];
 extern desc_table idt;
 extern desc_table gdt;
 

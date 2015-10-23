@@ -63,9 +63,9 @@ struct task_struct {
 /* father */ 	0, 			\
 		/***** LDT *****/ 	\
 		{ 			\
-/* null */        {0,0},          	\
-/* code */        {0x9f,0xc0fa00},	\
-/* data */        {0x9f,0xc0f200},	\
+/* null */      	{0,0},         	\
+/* code */      	{0x9f,0xc0fa00},\
+/* data */      	{0x9f,0xc0f200},\
 		}, 			\
         	/***** TSS *****/ 	\
 		{ 			\
@@ -73,7 +73,7 @@ struct task_struct {
 /* esp0=top of page */ 	&init_task+PAGE_SIZE,\
 /* ss0=SelectorData */ 	0x10,           \
 /* esp1,ss1,esp2,ss2 */ 0,0,0,0,        \
-/* cr3=pdt */ 		&pg_dir,        \
+/* cr3=pdt */ 		&pdt,        	\
 /* eip,eflags */ 	0,0,            \
 /* eax,ecx,edx,ebx */ 	0,0,0,0,        \
 /* esp,ebp,esi,edi */ 	0,0,0,0,        \

@@ -4,6 +4,7 @@
 
 extern main
 
+global gdt,pdt
 global startup_32
 
 pdt:
@@ -132,6 +133,8 @@ setup_paging:
 times 	100h 	db 	0
 TopOfStack 	equ	$ 
 
+
+gdt:
 
 ;[SECTION .gdt]
 ;                            	 Base Addr,        Limit, 	Attribute
