@@ -122,9 +122,9 @@ disasm-sys: system/system
 #################
 
 commit:
-	git status -s
-	git add .
-	git commit -m "$(MSG)"
+	@git status -s
+	@git add .
+	@git commit -m "$(MSG)"
 
 
 #################
