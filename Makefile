@@ -12,8 +12,11 @@ LD 	= ld
 # -Ttext org -e entry -s(omit all symbol info)
 # -x(discard all local symbols) -M(print memory map)
 LDFLAGS = -Ttext 0 -e startup_32 --oformat binary -s -x -M
+AR 	= ar
+ARFLAGS = rcs
 
-OBJS 	= system/init/head.o system/kernel/proc.o system/init/main.o 
+OBJS 	= system/init/head.o system/kernel/proc.o system/kernel/syscall.o system/init/main.o system/lib/lib.a
+LIBS 	= system/lib/write.o
 
 %.o:	%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -55,6 +58,9 @@ system/system:	$(OBJS)
 
 system/init/head.o: 	system/init/head.asm include/var.inc include/pm.inc
 	$(AS) $(ASFLAGS) $(ASINC) -o $@ $<
+
+system/lib/lib.a: 	$(LIBS)
+	$(AR) $(ARFLAGS) $@ $<
 
 
 #################
@@ -116,6 +122,7 @@ disasm-sys: system/system
 #################
 
 commit:
+	git status -s
 	git add .
 	git commit -m "$(MSG)"
 
@@ -126,7 +133,7 @@ commit:
 
 clean:
 	rm -f boot1/bootsect boot2/setup system/system tools/build 
-	rm -f system/**/*.o
+	rm -f $(OBJS)
 	rm -f a.bin tmp.asm System.map
 
 .PHONY: clean
@@ -135,4 +142,5 @@ clean:
 ### Dependencies
 main.o: system/init/main.c include/proc.h include/type.h include/head.h
 proc.o: system/kernel/proc.c include/proc.h include/type.h include/head.h \
-  include/mm.h include/system.h
+  include/mm.h include/system.h include/io.h
+write.o: system/lib/write.c

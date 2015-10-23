@@ -4,7 +4,7 @@
 
 extern main,stack_start
 
-global gdt,pdt
+global pdt,idt,gdt
 global startup_32
 
 pdt:
@@ -41,6 +41,9 @@ startup_32:
 	inc 	edx
 	cmp 	ecx, 0h
 	jne 	.loop
+
+; 2) Set IDTR
+	lidt 	[IdtPtr]
 
 ; 2) Reset GDTR
 	lgdt 	[GdtPtr]
@@ -128,15 +131,16 @@ setup_paging:
 	; 4.6) Transfer control to main()
 	ret
 
+idt:
+LABEL_IDT:
+times 	256 	dd 	0x0, 0x0		; space for LDT and TSS
 
-; Temporary stack space
-times 	100h 	db 	0
-TopOfStack 	equ	$ 
+IdtLen 		equ 	$ - LABEL_IDT
+IdtPtr 		dw 	IdtLen - 1 		; IDT limit
+		dd 	LABEL_IDT 		; IDT base addr
 
 
 gdt:
-
-;[SECTION .gdt]
 ;                            	 Base Addr,        Limit, 	Attribute
 LABEL_GDT:	   	Descriptor      0h,           0h, 0h
 LABEL_DESC_CODE:	Descriptor  	0h,       0ffffh, DA_CR	| DA_32 | DA_LIMIT_4K

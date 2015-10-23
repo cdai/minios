@@ -1,6 +1,7 @@
 #include "proc.h"
 #include "mm.h" 		/* PAGE_SIZE */
 #include "system.h" 		/* set_tss/ldt_desc */
+#include "io.h" 		/* outb,outb_p */
 
 /*
  * 1 page:
@@ -35,6 +36,12 @@ struct {
 } stack_start = { user_stack, 0x10 };
 
 
+#define LATCH (1193180/HZ)
+
+extern int timer_interrupt(void);
+extern int system_call(void);
+
+
 void sched_init()
 {
 	int i;
@@ -58,5 +65,12 @@ void sched_init()
 	ltr(0);
 	lldt(0);
 
-	// 3.Enable time interrupt
+	// 3.Enable time interrupt and syscall
+	outb_p(0x36, 0x43);		/* binary, mode 3, LSB/MSB, ch 0 */
+	outb_p(LATCH & 0xff, 0x40);	/* LSB */
+	outb(LATCH >> 8, 0x40);		/* MSB */
+	set_intr_gate(0x20, &timer_interrupt);
+	outb(inb_p(0x21) & ~0x01, 0x21);
+	set_system_gate(0x80, &system_call);
 }
+

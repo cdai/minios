@@ -49,6 +49,7 @@ struct task_struct {
 /****************************************/
 
 #define NR_TASKS 64
+#define HZ 100
 
 #define TASK_RUNNING		0
 #define TASK_INTERRUPTIBLE	1
