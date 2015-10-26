@@ -15,7 +15,7 @@ LDFLAGS = -Ttext 0 -e startup_32 --oformat binary -s -x -M
 AR 	= ar
 ARFLAGS = rcs
 
-OBJS 	= system/init/head.o system/kernel/proc.o system/kernel/syscall.o system/init/main.o system/lib/lib.a
+OBJS 	= system/init/head.o system/kernel/proc.o system/kernel/syscall.o system/fs/read_write.o system/init/main.o system/lib/lib.a
 LIBS 	= system/lib/write.o
 
 %.o:	%.c
@@ -140,7 +140,8 @@ clean:
 
 
 ### Dependencies
+read_write.o: system/fs/read_write.c include/type.h
 main.o: system/init/main.c include/proc.h include/type.h include/head.h
 proc.o: system/kernel/proc.c include/proc.h include/type.h include/head.h \
-  include/mm.h include/system.h include/io.h
-write.o: system/lib/write.c
+  include/mm.h include/system.h include/io.h include/syscall.h
+write.o: system/lib/write.c include/type.h
