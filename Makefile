@@ -121,6 +121,8 @@ disasm-sys: system/system
 # GitHub
 #################
 
+# -s means short output format
+# @cmd disable echo
 commit:
 	@git status -s
 	@git add .
