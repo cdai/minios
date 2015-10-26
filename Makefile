@@ -10,10 +10,10 @@ LD 	= ld
 
 DEBUG 	= false
 ifeq ($(DEBUG),true)
-	ASFLAGS	= -g -f elf
+	ASFLAGS	= -f elf -g
 	CFLAGS	= -Wall -O -g -I include/
 	# -Ttext org -e entry -M(print memory map)
-	LDFLAGS = -Ttext 0 -e startup_32 --oformat binary -M
+	LDFLAGS = -Ttext 0 -e startup_32 -M
 else
 	ASFLAGS	= -f elf
 	CFLAGS	= -Wall -O -I include/
@@ -125,6 +125,14 @@ disasm-sys: system/system
 	objdump -b binary -m i386 -D $<
 
 .PHONY: disasm-b1 disasm-b2 disasm-sys
+
+
+#################
+# GDB Debugger
+#################
+
+gdb: 	system/system
+	@gdb system/system
 
 
 #################
