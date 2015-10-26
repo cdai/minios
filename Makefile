@@ -8,19 +8,16 @@ ASINC	= -I include/
 CC	= gcc
 LD 	= ld
 
-DEBUG 	= false
-ifeq ($(DEBUG),true)
-	ASFLAGS	= -f elf -g
-	CFLAGS	= -Wall -O -g -I include/
-	# -Ttext org -e entry -M(print memory map)
-	LDFLAGS = -Ttext 0 -e startup_32 -M
-else
-	ASFLAGS	= -f elf
-	CFLAGS	= -Wall -O -I include/
-	# -Ttext org -e entry -s(omit all symbol info)
-	# -x(discard all local symbols) -M(print memory map)
-	LDFLAGS = -Ttext 0 -e startup_32 --oformat binary -s -x -M
-endif
+ASFLAGS	= -f elf -g
+CFLAGS	= -Wall -O -g -I include/
+
+# -Ttext org -e entry 
+# -s(omit all symbol info) -S(omit debug info)
+# -x(discard all local symbols) -M(print memory map)
+LDFLAGS = -Ttext 0 -e startup_32 --oformat binary -s -S -x -M
+
+# -Ttext org -e entry -M(print memory map)
+LDFLAGS2= -Ttext 0 -e startup_32
 
 AR 	= ar
 ARFLAGS = rcs
@@ -65,6 +62,9 @@ system/system:	$(OBJS)
 	$(LD) $(LDFLAGS) \
 	$(OBJS) \
 	-o $@ > System.map
+	$(LD) $(LDFLAGS2) \
+	$(OBJS) \
+	-o system/system-gdb
 
 system/init/head.o: 	system/init/head.asm include/var.inc include/pm.inc
 	$(AS) $(ASFLAGS) $(ASINC) -o $@ $<
@@ -132,7 +132,7 @@ disasm-sys: system/system
 #################
 
 gdb: 	system/system
-	@gdb system/system
+	@gdb system/system-gdb
 
 
 #################
@@ -152,7 +152,7 @@ commit:
 #################
 
 clean:
-	rm -f boot1/bootsect boot2/setup system/system tools/build 
+	rm -f boot1/bootsect boot2/setup system/system system/system-gdb tools/build 
 	rm -f $(OBJS)
 	rm -f a.bin tmp.asm System.map
 
