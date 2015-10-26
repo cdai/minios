@@ -5,13 +5,23 @@
 
 AS 	= nasm
 ASINC	= -I include/
-ASFLAGS	= -f elf
 CC	= gcc
-CFLAGS	= -Wall -O -I include/
 LD 	= ld
-# -Ttext org -e entry -s(omit all symbol info)
-# -x(discard all local symbols) -M(print memory map)
-LDFLAGS = -Ttext 0 -e startup_32 --oformat binary -s -x -M
+
+DEBUG 	= false
+ifeq ($(DEBUG),true)
+	ASFLAGS	= -g -f elf
+	CFLAGS	= -Wall -O -g -I include/
+	# -Ttext org -e entry -M(print memory map)
+	LDFLAGS = -Ttext 0 -e startup_32 --oformat binary -M
+else
+	ASFLAGS	= -f elf
+	CFLAGS	= -Wall -O -I include/
+	# -Ttext org -e entry -s(omit all symbol info)
+	# -x(discard all local symbols) -M(print memory map)
+	LDFLAGS = -Ttext 0 -e startup_32 --oformat binary -s -x -M
+endif
+
 AR 	= ar
 ARFLAGS = rcs
 
