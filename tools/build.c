@@ -1,7 +1,7 @@
 #include <stdio.h>		/* fprintf */
 #include <string.h>
 #include <stdlib.h>		/* exit */
-#include <sys/types.h>	/* unistd.h needs this */
+#include <sys/types.h>		/* unistd.h needs this */
 #include <unistd.h>		/* read/write */
 #include <fcntl.h>
 

@@ -9,6 +9,7 @@ CC	= gcc
 LD 	= ld
 
 ASFLAGS	= -f elf -g
+# -fomit-frame-pointer is for embedded asm
 CFLAGS	= -Wall -O -g -I include/
 
 # -Ttext org -e entry 
@@ -17,7 +18,7 @@ CFLAGS	= -Wall -O -g -I include/
 LDFLAGS = -Ttext 0 -e startup_32 --oformat binary -s -S -x -M
 
 # -Ttext org -e entry -M(print memory map)
-LDFLAGS2= -Ttext 0 -e startup_32
+LDFLAGS2= -Ttext 0 -e startup_32 -x
 
 AR 	= ar
 ARFLAGS = rcs
@@ -31,15 +32,18 @@ LIBS 	= system/lib/write.o
 %.o: 	%.asm
 	$(AS) $(ASFLAGS) -o $@ $<
 
+FORMAT 	= \033[31;1m
+RESET 	= \033[0m
 
 #################
 # Default
 #################
 
-all:	Image
+all:	clean Image
 
 
 Image:	boot1/bootsect boot2/setup system/system tools/build 	
+	@echo -e "$(FORMAT)[Copy bootsect,setup,system to Image]$(RESET)"
 	tools/build boot1/bootsect boot2/setup system/system > a.bin
 	dd if=a.bin of=Image bs=8192 conv=notrunc
 	rm -f a.bin
@@ -49,6 +53,7 @@ tools/build:	tools/build.c
 
 # SYSSIZE = system file size
 boot1/bootsect:	boot1/bootsect.asm include/var.inc system/system
+	@echo -e "$(FORMAT)[Compile bootloader1 - bootsect]$(RESET)"
 	(echo -n "SYSSIZE equ ";ls -l system/system | grep system \
 		| cut -d " " -f 5 | tr '\012' ' ') > tmp.asm
 	cat $< >> tmp.asm
@@ -56,12 +61,15 @@ boot1/bootsect:	boot1/bootsect.asm include/var.inc system/system
 	rm -f tmp.asm
 
 boot2/setup:	boot2/setup.asm include/var.inc include/pm.inc
+	@echo -e "$(FORMAT)[Compile bootloader2 - setup]$(RESET)"
 	$(AS) $(ASINC) -o $@ $<
 
 system/system:	$(OBJS)
+	@echo -e "$(FORMAT)[Link system kernel]$(RESET)"
 	$(LD) $(LDFLAGS) \
 	$(OBJS) \
 	-o $@ > System.map
+	@echo -e "$(FORMAT)[Link system kernel with debug info]$(RESET)"
 	$(LD) $(LDFLAGS2) \
 	$(OBJS) \
 	-o system/system-gdb
@@ -152,6 +160,7 @@ commit:
 #################
 
 clean:
+	@echo -e "$(FORMAT)[Clean temporary files]$(RESET)"
 	rm -f boot1/bootsect boot2/setup system/system system/system-gdb tools/build 
 	rm -f $(OBJS)
 	rm -f a.bin tmp.asm System.map
@@ -161,7 +170,8 @@ clean:
 
 ### Dependencies
 read_write.o: system/fs/read_write.c include/type.h
-main.o: system/init/main.c include/proc.h include/type.h include/head.h
+main.o: system/init/main.c include/proc.h include/type.h include/head.h \
+  include/system.h include/proto.h
 proc.o: system/kernel/proc.c include/proc.h include/type.h include/head.h \
   include/mm.h include/system.h include/io.h include/syscall.h
-write.o: system/lib/write.c include/type.h
+write.o: system/lib/write.c include/type.h include/proto.h include/type.h

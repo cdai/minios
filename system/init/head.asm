@@ -18,6 +18,7 @@ startup_32:
 	mov 	ax, 16 		; SelectorData
 	mov 	ds, ax
 	mov 	es, ax
+	mov 	fs, ax
 	mov 	ss, ax
 	lss 	esp, [stack_start]
 
@@ -43,9 +44,23 @@ startup_32:
 	jne 	.loop
 
 ; 2) Set IDTR
+setup_idt:
+	mov 	edx, ignore_int
+	mov 	eax, 0x00080000 ; ah = SelectorCode
+	mov 	ax, dx 		; al = ignore_int
+	mov 	dx, 0x8E00
+	mov 	edi, idt
+	mov 	ecx, 256
+.loop
+	mov 	[edi], eax
+	mov 	[edi+4], edx
+	add 	edi, 8
+	dec 	ecx
+	jne 	.loop
 	lidt 	[IdtPtr]
 
 ; 2) Reset GDTR
+setup_gdt:
 	lgdt 	[GdtPtr]
 
 ; 3) Prepare return address
@@ -85,6 +100,11 @@ pg3:
 times 	PtSize*EntrySize 	db 0
 
 
+ALIGN 	32
+ignore_int:
+	iret
+
+
 ; 4) Setup paging
 PgRw 		equ 	111h
 
@@ -118,6 +138,7 @@ setup_paging:
 	stosd 					; move eax => [es:edi] by dword
 	sub 	eax, PageSize
 	jge 	.loop
+	cld
 
 	; 4.4) Set cr3 (PDBR, Page-Dir Base address Register)
 	xor 	eax, eax

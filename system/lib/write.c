@@ -1,6 +1,7 @@
-#include "type.h" 	/* u32 */
+#include "type.h" 		/* u32 */
+#include "proto.h" 		/* write() */
 
-int write(int fd, const char *buf, int cnt)
+int write(u32 fd, const char *buf, u32 cnt)
 {
 	long res;
         __asm__(
