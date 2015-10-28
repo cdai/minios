@@ -23,7 +23,7 @@ LDFLAGS2= -Ttext 0 -e startup_32 -x
 AR 	= ar
 ARFLAGS = rcs
 
-OBJS 	= system/init/head.o system/kernel/proc.o system/kernel/syscall.o system/fs/read_write.o system/init/main.o system/lib/lib.a
+OBJS 	= system/init/head.o system/kernel/proc.o system/kernel/syscall.o system/kernel/traps.o system/mm/page.o system/fs/read_write.o system/init/main.o system/lib/lib.a
 LIBS 	= system/lib/write.o
 
 %.o:	%.c
@@ -174,4 +174,5 @@ main.o: system/init/main.c include/proc.h include/type.h include/head.h \
   include/system.h include/proto.h
 proc.o: system/kernel/proc.c include/proc.h include/type.h include/head.h \
   include/mm.h include/system.h include/io.h include/syscall.h
+traps.o: system/kernel/traps.c include/system.h
 write.o: system/lib/write.c include/type.h include/proto.h include/type.h

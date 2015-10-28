@@ -1,6 +1,8 @@
 #ifndef _HEAD_H_
 #define _HEAD_H_
 
+#include "type.h"
+
 typedef struct desc_struct {
 	u32 	a;
 	u32 	b;

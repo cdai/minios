@@ -14,6 +14,7 @@ static void myprint(const char *str)
 
 int main(void)
 {
+	trap_init();
 	sched_init();
 	sti();
 	move_to_user_mode();
