@@ -30,4 +30,5 @@ system_call:
 	iret
 
 timer_interrupt:
+	iret
 
