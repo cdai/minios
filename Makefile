@@ -116,6 +116,11 @@ start:	Image
 qemu: 	Image
 	qemu-system-x86_64 -m 16M -boot a -fda Image
 
+gdb: 	Image system/system-gdb
+	@nohup bochs -q -f bochsrc > /dev/null &
+	@sleep 2
+	@gdb system/system-gdb
+
 .PHONY: start qemu
 
 
@@ -133,14 +138,6 @@ disasm-sys: system/system
 	objdump -b binary -m i386 -D $<
 
 .PHONY: disasm-b1 disasm-b2 disasm-sys
-
-
-#################
-# GDB Debugger
-#################
-
-gdb: 	system/system
-	@gdb system/system-gdb
 
 
 #################
