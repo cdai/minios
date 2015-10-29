@@ -107,17 +107,17 @@ disk:
 
 
 #################
-# Start Vm
+# Start & Debug
 #################
 
 start:	Image
-	bochs -q -f bochsrc
+	@bochs -q -f bochsrc
 
 qemu: 	Image
-	qemu-system-x86_64 -m 16M -boot a -fda Image
+	@qemu-system-x86_64 -m 16M -boot a -fda Image
 
 gdb: 	Image system/system-gdb
-	@nohup bochs -q -f bochsrc > /dev/null &
+	@nohup ./bochs -q -f bochsrc-gdb > /dev/null &
 	@sleep 2
 	@gdb system/system-gdb
 
