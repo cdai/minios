@@ -71,7 +71,7 @@ struct task_struct {
         	/***** TSS *****/ 	\
 		{ 			\
 /* back_link */ 	0,              \
-/* esp0=top of page */ 	&init_task+PAGE_SIZE,\
+/* esp0=top of page */ 	(u32)&init_task+PAGE_SIZE,\
 /* ss0=SelectorData */ 	0x10,           \
 /* esp1,ss1,esp2,ss2 */ 0,0,0,0,        \
 /* cr3=pdt */ 		&pdt,        	\
