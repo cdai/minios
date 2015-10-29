@@ -106,7 +106,7 @@ ignore_int:
 
 
 ; 4) Setup paging
-PgRw 		equ 	111h
+PgRw 		equ 	7
 
 ALIGN   32
 setup_paging:
