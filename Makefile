@@ -5,13 +5,26 @@
 
 AS 	= nasm
 ASINC	= -I include/
-ASFLAGS	= -f elf
 CC	= gcc
-CFLAGS	= -Wall -O
 LD 	= ld
-# -Ttext org -e entry -s(omit all symbol info)
+
+ASFLAGS	= -f elf -g
+# -fomit-frame-pointer is for embedded asm
+CFLAGS	= -Wall -O -g -I include/
+
+# -Ttext org -e entry 
+# -s(omit all symbol info) -S(omit debug info)
 # -x(discard all local symbols) -M(print memory map)
-LDFLAGS = -Ttext 0 -e startup_32 --oformat binary -s -x -M
+LDFLAGS = -Ttext 0 -e startup_32 --oformat binary -s -S -x -M
+
+# -Ttext org -e entry -M(print memory map)
+LDFLAGS2= -Ttext 0 -e startup_32 -x
+
+AR 	= ar
+ARFLAGS = rcs
+
+OBJS 	= system/init/head.o system/kernel/proc.o system/kernel/syscall.o system/kernel/traps.o system/mm/page.o system/fs/read_write.o system/init/main.o system/lib/lib.a
+LIBS 	= system/lib/write.o
 
 %.o:	%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -19,15 +32,18 @@ LDFLAGS = -Ttext 0 -e startup_32 --oformat binary -s -x -M
 %.o: 	%.asm
 	$(AS) $(ASFLAGS) -o $@ $<
 
+FORMAT 	= \033[31;1m
+RESET 	= \033[0m
 
 #################
 # Default
 #################
 
-all:	Image
+all:	clean Image
 
 
 Image:	boot1/bootsect boot2/setup system/system tools/build 	
+	@echo -e "$(FORMAT)[Copy bootsect,setup,system to Image]$(RESET)"
 	tools/build boot1/bootsect boot2/setup system/system > a.bin
 	dd if=a.bin of=Image bs=8192 conv=notrunc
 	rm -f a.bin
@@ -37,6 +53,7 @@ tools/build:	tools/build.c
 
 # SYSSIZE = system file size
 boot1/bootsect:	boot1/bootsect.asm include/var.inc system/system
+	@echo -e "$(FORMAT)[Compile bootloader1 - bootsect]$(RESET)"
 	(echo -n "SYSSIZE equ ";ls -l system/system | grep system \
 		| cut -d " " -f 5 | tr '\012' ' ') > tmp.asm
 	cat $< >> tmp.asm
@@ -44,18 +61,39 @@ boot1/bootsect:	boot1/bootsect.asm include/var.inc system/system
 	rm -f tmp.asm
 
 boot2/setup:	boot2/setup.asm include/var.inc include/pm.inc
+	@echo -e "$(FORMAT)[Compile bootloader2 - setup]$(RESET)"
 	$(AS) $(ASINC) -o $@ $<
 
-system/system:	system/init/head.o system/init/main.o
+system/system:	$(OBJS)
+	@echo -e "$(FORMAT)[Link system kernel]$(RESET)"
 	$(LD) $(LDFLAGS) \
-	system/init/head.o \
-	system/init/main.o \
+	$(OBJS) \
 	-o $@ > System.map
+	@echo -e "$(FORMAT)[Link system kernel with debug info]$(RESET)"
+	$(LD) $(LDFLAGS2) \
+	$(OBJS) \
+	-o system/system-gdb
 
 system/init/head.o: 	system/init/head.asm include/var.inc include/pm.inc
 	$(AS) $(ASFLAGS) $(ASINC) -o $@ $<
 
-system/init/main.o:	system/init/main.c
+system/lib/lib.a: 	$(LIBS)
+	$(AR) $(ARFLAGS) $@ $<
+
+
+#################
+# Disassemble
+#################
+
+# sed /q: match to that line then QUIT
+# append "cc -MM" output to the end
+dep:
+	sed '/\#\#\# Dependencies/q' < Makefile > tmp.make
+	$(CC) $(CFLAGS) -MM system/**/*.c >> tmp.make
+	cp -f tmp.make Makefile
+	rm -f tmp.make
+
+.PHONY: dep
 
 
 #################
@@ -78,11 +116,16 @@ start:	Image
 qemu: 	Image
 	qemu-system-x86_64 -m 16M -boot a -fda Image
 
+gdb: 	Image system/system-gdb
+	@nohup bochs -q -f bochsrc > /dev/null &
+	@sleep 2
+	@gdb system/system-gdb
+
 .PHONY: start qemu
 
 
 #################
-# GitHub
+# Disassemble
 #################
 
 disasm-b1: boot1/bootsect
@@ -101,9 +144,12 @@ disasm-sys: system/system
 # GitHub
 #################
 
+# -s means short output format
+# @cmd disable echo
 commit:
-	git add .
-	git commit -m "$(MSG)"
+	@git status -s
+	@git add .
+	@git commit -m "$(MSG)"
 
 
 #################
@@ -111,8 +157,19 @@ commit:
 #################
 
 clean:
-	rm -f boot1/bootsect boot2/setup system/system tools/build 
-	rm -f system/**/*.o
+	@echo -e "$(FORMAT)[Clean temporary files]$(RESET)"
+	rm -f boot1/bootsect boot2/setup system/system system/system-gdb tools/build 
+	rm -f $(OBJS)
 	rm -f a.bin tmp.asm System.map
 
 .PHONY: clean
+
+
+### Dependencies
+read_write.o: system/fs/read_write.c include/type.h
+main.o: system/init/main.c include/proc.h include/type.h include/head.h \
+  include/system.h include/proto.h
+proc.o: system/kernel/proc.c include/proc.h include/type.h include/head.h \
+  include/mm.h include/system.h include/io.h include/syscall.h
+traps.o: system/kernel/traps.c include/system.h
+write.o: system/lib/write.c include/type.h include/proto.h include/type.h

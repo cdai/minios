@@ -2,8 +2,9 @@
 %include "var.inc"
 %include "pm.inc"
 
-extern main
+extern main,stack_start
 
+global pdt,idt,gdt
 global startup_32
 
 pdt:
@@ -17,8 +18,9 @@ startup_32:
 	mov 	ax, 16 		; SelectorData
 	mov 	ds, ax
 	mov 	es, ax
+	mov 	fs, ax
 	mov 	ss, ax
-	mov 	esp, TopOfStack
+	lss 	esp, [stack_start]
 
 ; 1) Print welcome message
 	mov     ax, 24 		; SelectorVideo
@@ -41,7 +43,24 @@ startup_32:
 	cmp 	ecx, 0h
 	jne 	.loop
 
+; 2) Set IDTR
+setup_idt:
+	mov 	edx, ignore_int
+	mov 	eax, 0x00080000 ; ah = SelectorCode
+	mov 	ax, dx 		; al = ignore_int
+	mov 	dx, 0x8E00
+	mov 	edi, idt
+	mov 	ecx, 256
+.loop
+	mov 	[edi], eax
+	mov 	[edi+4], edx
+	add 	edi, 8
+	dec 	ecx
+	jne 	.loop
+	lidt 	[IdtPtr]
+
 ; 2) Reset GDTR
+setup_gdt:
 	lgdt 	[GdtPtr]
 
 ; 3) Prepare return address
@@ -81,8 +100,13 @@ pg3:
 times 	PtSize*EntrySize 	db 0
 
 
+ALIGN 	32
+ignore_int:
+	iret
+
+
 ; 4) Setup paging
-PgRw 		equ 	111h
+PgRw 		equ 	7
 
 ALIGN   32
 setup_paging:
@@ -114,6 +138,7 @@ setup_paging:
 	stosd 					; move eax => [es:edi] by dword
 	sub 	eax, PageSize
 	jge 	.loop
+	cld
 
 	; 4.4) Set cr3 (PDBR, Page-Dir Base address Register)
 	xor 	eax, eax
@@ -127,22 +152,26 @@ setup_paging:
 	; 4.6) Transfer control to main()
 	ret
 
+idt:
+LABEL_IDT:
+times 	256 	dd 	0x0, 0x0		; space for LDT and TSS
 
-; Temporary stack space
-times 	100h 	db 	0
-TopOfStack 	equ	$ 
+IdtLen 		equ 	$ - LABEL_IDT
+IdtPtr 		dw 	IdtLen - 1 		; IDT limit
+		dd 	LABEL_IDT 		; IDT base addr
 
 
-;[SECTION .gdt]
+gdt:
 ;                            	 Base Addr,        Limit, 	Attribute
 LABEL_GDT:	   	Descriptor      0h,           0h, 0h
-LABEL_DESC_SYSTEM:	Descriptor  	0h,       0ffffh, DA_CR	| DA_32 | DA_LIMIT_4K
-LABEL_DESC_DATA:	Descriptor 	0h,       0ffffh, DA_DRW | DA_32 | DA_LIMIT_4K
-times 	253 	dd 	0x0, 0x0		; space for LDT and TSS
+LABEL_DESC_CODE:	Descriptor  	0h,        0fffh, DA_CR	| DA_32 | DA_LIMIT_4K
+LABEL_DESC_DATA:	Descriptor 	0h,        0fffh, DA_DRW | DA_32 | DA_LIMIT_4K
+LABEL_DESC_TEMP:	Descriptor      0h,           0h, 0h
+times 	252 	dd 	0x0, 0x0		; space for LDT and TSS
 
 GdtLen		equ	$ - LABEL_GDT
 GdtPtr		dw	GdtLen - 1		; GDT limit
 		dd	LABEL_GDT		; GDT base addr
 
-SelectorSystem	equ	LABEL_DESC_SYSTEM - LABEL_GDT
+SelectorCode	equ	LABEL_DESC_CODE - LABEL_GDT
 SelectorData 	equ	LABEL_DESC_DATA - LABEL_GDT

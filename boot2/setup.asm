@@ -67,13 +67,13 @@ move_system:
 	mov 	cr0, eax
 
 	; 3.5) Jump to protective mode!
-	jmp 	dword SelectorSystem:0	; 0x0000:0x0
+	jmp 	dword SelectorCode:0	; 0x0000:0x0
 
 
 [SECTION .gdt]
 ;                            	 Base Addr,        Limit, 	Attribute
 LABEL_GDT:	   	Descriptor      0h,           0h, 0h
-LABEL_DESC_SYSTEM:	Descriptor  	0h,       0ffffh, DA_CR	| DA_32 | DA_LIMIT_4K
+LABEL_DESC_CODE:	Descriptor  	0h,       0ffffh, DA_CR	| DA_32 | DA_LIMIT_4K
 LABEL_DESC_DATA:	Descriptor 	0h,       0ffffh, DA_DRW | DA_32 | DA_LIMIT_4K
 LABEL_DESC_VIDEO:  	Descriptor 0B8000h,       0ffffh, DA_DRW
 
@@ -81,6 +81,6 @@ GdtLen		equ	$ - LABEL_GDT
 GdtPtr		dw	GdtLen - 1		; GDT limit
 		dd	0			; GDT base addr
 
-SelectorSystem	equ	LABEL_DESC_SYSTEM - LABEL_GDT
+SelectorCode	equ	LABEL_DESC_CODE - LABEL_GDT
 SelectorData 	equ	LABEL_DESC_DATA - LABEL_GDT
 SelectorVideo	equ	LABEL_DESC_VIDEO - LABEL_GDT
