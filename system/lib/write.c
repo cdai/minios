@@ -1,4 +1,3 @@
-#include "type.h" 		/* u32 */
 #include "proto.h" 		/* write() */
 
 int write(u32 fd, const char *buf, u32 cnt)

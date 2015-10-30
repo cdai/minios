@@ -75,3 +75,9 @@ void sched_init()
 	set_system_gate(0x80, &system_call);
 }
 
+int sys_fork()
+{
+
+}
+
+

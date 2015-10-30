@@ -1,6 +1,6 @@
-#include "proc.h"
+#include "proc.h" 		/* sched_init */
 #include "system.h" 		/* move_to_user_mode */
-#include "proto.h" 		/* write */
+#include "proto.h" 		/* write,fork */
 
 static void myprint(const char *str)
 {
@@ -18,6 +18,10 @@ int main(void)
 	sched_init();
 	sti();
 	move_to_user_mode();
+
+	if (!fork()) {
+
+	}
 
 	myprint("In kernel");
 
