@@ -121,7 +121,7 @@ gdb: 	Image system/system-gdb
 	@sleep 2
 	@gdb system/system-gdb
 
-.PHONY: start qemu
+.PHONY: start qemu gdb
 
 
 #################
@@ -145,7 +145,6 @@ disasm-sys: system/system
 #################
 
 # -s means short output format
-# @cmd disable echo
 commit:
 	@git status -s
 	@git add .
