@@ -4,6 +4,7 @@
 #include "type.h"
 
 int fork();
-int write(u32 fd, const char *buf, u32 cnt);
+int write(const char *buf);
+//int write(u32 fd, const char *buf, u32 cnt);
 
 #endif

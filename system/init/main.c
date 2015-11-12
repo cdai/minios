@@ -2,16 +2,6 @@
 #include "system.h" 		/* move_to_user_mode */
 #include "proto.h" 		/* write,fork */
 
-static void myprint(const char *str)
-{
-	int i;
-
-	i = 0;
-	while (str[i++]);
-
-	write(1, str, i);
-}
-
 int main(void)
 {
 	trap_init();
@@ -19,11 +9,10 @@ int main(void)
 	sti();
 	move_to_user_mode();
 
+	write("Forking process 0");
 	if (!fork()) {
 
 	}
-
-	myprint("In kernel");
 
 	while(1){}
 
