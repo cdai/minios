@@ -121,6 +121,11 @@ gdb: 	Image system/system-gdb
 	@sleep 2
 	@gdb system/system-gdb
 
+# match .text until blank line, then filter out .text and *fill*...
+sysmap: System.map
+	@sed -n '/^.text/,/^$$/p' System.map | egrep -v "^.text|^ .text|^ \*"
+	@sed -n '/^.data /,/^$$/p' System.map | egrep -v "^.data|^ .data|^ \*"
+
 .PHONY: start qemu gdb
 
 

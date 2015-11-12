@@ -1,5 +1,5 @@
 
-global timer_interrupt,system_call
+global timer_interrupt,system_call,sys_write
 
 extern sys_call_table
 
@@ -32,3 +32,38 @@ system_call:
 timer_interrupt:
 	iret
 
+disp_row: 	dd 	21
+
+sys_write:
+	push 	ebp
+	mov 	ebp, esp
+	push 	gs
+	mov 	ax, 0x18
+	mov 	gs, ax
+
+	; buf
+	; ret addr
+	; ebp
+	; gs
+	; --- esp
+	mov 	ah, 0Fh
+	mov 	ebx, [esp+12] 	
+	mov 	al, byte [ebx] 	; ebx is char offset
+	mov 	ecx, [disp_row] ; ecx is old row number
+	mov 	edi, ecx
+	imul 	edi, 160 	; (80 * row + col) * 2
+.loop:
+	mov 	[gs:edi], ax
+
+	add 	edi, 2
+	inc 	ebx
+	mov 	al, byte [ebx]
+	cmp 	al, 0h
+	jnz 	.loop
+
+	inc 	ecx 		; set position to next line
+	mov 	[disp_row], ecx
+
+	pop 	gs
+	pop 	ebp
+	ret

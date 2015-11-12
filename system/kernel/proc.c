@@ -77,7 +77,9 @@ void sched_init()
 
 int sys_fork()
 {
+	int a;
 
+	a = 0;
+	a++;
 }
-
 

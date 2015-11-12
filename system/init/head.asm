@@ -166,7 +166,8 @@ gdt:
 LABEL_GDT:	   	Descriptor      0h,           0h, 0h
 LABEL_DESC_CODE:	Descriptor  	0h,        0fffh, DA_CR	| DA_32 | DA_LIMIT_4K
 LABEL_DESC_DATA:	Descriptor 	0h,        0fffh, DA_DRW | DA_32 | DA_LIMIT_4K
-LABEL_DESC_TEMP:	Descriptor      0h,           0h, 0h
+;LABEL_DESC_TEMP:	Descriptor      0h,           0h, 0h
+LABEL_DESC_VIDEO:  	Descriptor 0B8000h,        0fffh, DA_DRW
 times 	252 	dd 	0x0, 0x0		; space for LDT and TSS
 
 GdtLen		equ	$ - LABEL_GDT
