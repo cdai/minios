@@ -2,8 +2,13 @@
 #include "system.h" 		/* move_to_user_mode */
 #include "proto.h" 		/* write,fork */
 
+#define start_mem 4*1024*1024
+#define end_mem 16*1024*1024
+#define buf_end 4*1024*1024
+
 int main(void)
 {
+	mem_init(start_mem, end_mem);
 	trap_init();
 	sched_init();
 	sti();

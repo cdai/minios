@@ -3,4 +3,6 @@
 
 #define PAGE_SIZE 4096
 
+extern unsigned long get_free_page(void);
+
 #endif
