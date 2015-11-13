@@ -1,7 +1,7 @@
 
-global timer_interrupt,system_call,sys_write
+global timer_interrupt,system_call,sys_fork,sys_write
 
-extern sys_call_table
+extern sys_call_table,find_empty_process,copy_process
 
 ALIGN   32
 system_call:
@@ -31,6 +31,17 @@ system_call:
 
 timer_interrupt:
 	iret
+
+sys_fork:
+	call 	find_empty_process ; save ret to eax
+	push 	gs
+	push 	esi
+	push 	edi
+	push 	ebp
+	push 	eax 		; pid
+	call 	copy_process
+	add 	esp, 20 	; pop 5 times
+	ret
 
 disp_row: 	dd 	21
 

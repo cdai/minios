@@ -17,6 +17,11 @@ union task_union {
 /* The kernel space of init task */
 static union task_union init_task = { INIT_TASK, };
 
+long volatile jiffies = 0;
+
+/* PCB of current process */
+struct task_struct *current = &(init_task.task);
+
 /* The pointer to PCB(task_struct array) */
 struct task_struct *task[NR_TASKS] = { &(init_task.task), };
 
@@ -41,6 +46,9 @@ struct {
 
 extern int timer_interrupt(void);
 extern int system_call(void);
+
+
+long last_pid = 0;
 
 
 void sched_init()
@@ -75,11 +83,43 @@ void sched_init()
 	set_system_gate(0x80, &system_call);
 }
 
-int sys_fork()
+int find_empty_process(void)
 {
-	int a;
+	int i;
 
-	a = 0;
-	a++;
+	// Wrap around
+	while (1) {
+		if (++last_pid < 0)
+			last_pid = 1;
+
+		for (i = 0; i < NR_TASKS; i++)
+			if (task[i] && task[i]->pid == last_pid)
+				break;
+
+		if (i == NR_TASKS)
+			break;
+	}
+	
+	for (i = 0; i < NR_TASKS; i++)
+		if (!task[i])
+			return i;
+	return -1;
+}
+
+int copy_process(int nr, long ebp, long edi, long esi, long gs,
+		long none,
+		long ebx, long ecx, long edx, long fs, long es, long ds,
+		long eip, long cs, long eflags, long esp, long ss)
+{
+	struct task_struct *p;
+
+	// Set p = start addr of new page
+	p = (struct task_struct *) get_free_page();
+	task[nr] = p;
+
+	//*p = *current;
+	p->pid = last_pid;
+
+	return 0;
 }
 
