@@ -1,16 +1,6 @@
-#include "proc.h"
+#include "proc.h" 		/* sched_init */
 #include "system.h" 		/* move_to_user_mode */
-#include "proto.h" 		/* write */
-
-static void myprint(const char *str)
-{
-	int i;
-
-	i = 0;
-	while (str[i++]);
-
-	write(1, str, i);
-}
+#include "proto.h" 		/* write,fork */
 
 int main(void)
 {
@@ -19,7 +9,10 @@ int main(void)
 	sti();
 	move_to_user_mode();
 
-	myprint("In kernel");
+	write("Forking process 0");
+	if (!fork()) {
+
+	}
 
 	while(1){}
 

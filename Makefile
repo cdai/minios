@@ -24,7 +24,7 @@ AR 	= ar
 ARFLAGS = rcs
 
 OBJS 	= system/init/head.o system/kernel/proc.o system/kernel/syscall.o system/kernel/traps.o system/mm/page.o system/fs/read_write.o system/init/main.o system/lib/lib.a
-LIBS 	= system/lib/write.o
+LIBS 	= system/lib/write.o system/lib/fork.o
 
 %.o:	%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
@@ -78,7 +78,7 @@ system/init/head.o: 	system/init/head.asm include/var.inc include/pm.inc
 	$(AS) $(ASFLAGS) $(ASINC) -o $@ $<
 
 system/lib/lib.a: 	$(LIBS)
-	$(AR) $(ARFLAGS) $@ $<
+	$(AR) $(ARFLAGS) $@ $(LIBS)
 
 
 #################
@@ -107,21 +107,26 @@ disk:
 
 
 #################
-# Start Vm
+# Start & Debug
 #################
 
 start:	Image
-	bochs -q -f bochsrc
+	@bochs -q -f bochsrc
 
 qemu: 	Image
-	qemu-system-x86_64 -m 16M -boot a -fda Image
+	@qemu-system-x86_64 -m 16M -boot a -fda Image
 
 gdb: 	Image system/system-gdb
-	@nohup bochs -q -f bochsrc > /dev/null &
+	@nohup ./bochs -q -f bochsrc-gdb > /dev/null &
 	@sleep 2
 	@gdb system/system-gdb
 
-.PHONY: start qemu
+# match .text until blank line, then filter out .text and *fill*...
+sysmap: System.map
+	@sed -n '/^.text/,/^$$/p' System.map | egrep -v "^.text|^ .text|^ \*"
+	@sed -n '/^.data /,/^$$/p' System.map | egrep -v "^.data|^ .data|^ \*"
+
+.PHONY: start qemu gdb
 
 
 #################
@@ -145,7 +150,6 @@ disasm-sys: system/system
 #################
 
 # -s means short output format
-# @cmd disable echo
 commit:
 	@git status -s
 	@git add .
@@ -159,7 +163,7 @@ commit:
 clean:
 	@echo -e "$(FORMAT)[Clean temporary files]$(RESET)"
 	rm -f boot1/bootsect boot2/setup system/system system/system-gdb tools/build 
-	rm -f $(OBJS)
+	rm -f $(OBJS) $(LIBS)
 	rm -f a.bin tmp.asm System.map
 
 .PHONY: clean
@@ -171,5 +175,7 @@ main.o: system/init/main.c include/proc.h include/type.h include/head.h \
   include/system.h include/proto.h
 proc.o: system/kernel/proc.c include/proc.h include/type.h include/head.h \
   include/mm.h include/system.h include/io.h include/syscall.h
-traps.o: system/kernel/traps.c include/system.h
-write.o: system/lib/write.c include/type.h include/proto.h include/type.h
+traps.o: system/kernel/traps.c include/system.h include/head.h \
+  include/type.h
+fork.o: system/lib/fork.c include/proto.h include/type.h
+write.o: system/lib/write.c include/proto.h include/type.h
