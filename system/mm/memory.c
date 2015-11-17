@@ -40,15 +40,15 @@ void mem_init(long start_mem, long end_mem)
 	int i, start_nr, end_nr;
 
 	HIGH_MEM = end_mem;
-	start_nr = MAP_NR(start_mem);
-	end_nr = MAP_NR(end_mem);
+	//start_nr = MAP_NR(start_mem);
+	//end_nr = MAP_NR(end_mem);
 
 	// 1MB ~ start_mem(4MB) is used as kernel buffer
-	for (i = 0; i < start_nr; i++)
+	for (i = 0; i < MAP_NR(start_mem); i++)
 		mem_map[i] = USED;
 
 	// start_mem ~ end_mem(16MB) is free
-	while (i++ < end_nr)
+	while (i++ < MAP_NR(end_mem))
 		mem_map[i] = FREE;
 
 	// end_mem ~ 16MB is invalid

@@ -87,20 +87,23 @@ int find_empty_process(void)
 {
 	int i;
 
-	// Wrap around
 	while (1) {
+		// Wrap around if overflow
 		if (++last_pid < 0)
 			last_pid = 1;
 
+		// Check if used
 		for (i = 0; i < NR_TASKS; i++)
 			if (task[i] && task[i]->pid == last_pid)
 				break;
 
+		// Jump out if found
 		if (i == NR_TASKS)
 			break;
 	}
 	
-	for (i = 0; i < NR_TASKS; i++)
+	// Find unused PCB slot
+	for (i = 1; i < NR_TASKS; i++)
 		if (!task[i])
 			return i;
 	return -1;
