@@ -119,7 +119,7 @@ qemu: 	Image
 gdb: 	Image system/system-gdb
 	@nohup ./bochs -q -f bochsrc-gdb > /dev/null &
 	@sleep 2
-	@gdb system/system-gdb
+	@gdb -tui system/system-gdb
 
 # match .text until blank line, then filter out .text and *fill*...
 sysmap: System.map
