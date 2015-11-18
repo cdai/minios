@@ -41,8 +41,7 @@ void mem_init(long start_mem, long end_mem)
 
 	HIGH_MEM = end_mem;
 	start_nr = MAP_NR(start_mem);
-	//end_nr = MAP_NR(end_mem);
-	end_nr = sizeof(mem_map);
+	end_nr = MAP_NR(end_mem);
 
 	// 1MB ~ start_mem(4MB) is used as kernel buffer
 	for (i = 0; i < start_nr; i++)
