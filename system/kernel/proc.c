@@ -33,13 +33,13 @@ long user_stack[PAGE_SIZE >> 2];
 
 /* 
  * Struct for "lss stack_start,%esp" at head.asm 
- *  stack_start[0~31]  => %esp 	(user_stack)
+ *  stack_start[0~31]  => %esp 	(&user_stack[1024])
  *  stack_start[32~47] => ss	(SelectorData)
  */
 struct {
 	u32 	*a;
 	u16 	b;
-} stack_start = { user_stack, 0x10 };
+} stack_start = { &user_stack[PAGE_SIZE >> 2], 0x10 };
 
 
 #define LATCH (1193180/HZ)
