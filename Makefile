@@ -10,15 +10,15 @@ LD 	= ld
 
 ASFLAGS	= -f elf -g
 # -fomit-frame-pointer is for embedded asm
-CFLAGS	= -Wall -O -g -I include/
+CFLAGS	= -g -I include/ -m32 -fno-builtin -fomit-frame-pointer -fstrength-reduce
 
 # -Ttext org -e entry 
 # -s(omit all symbol info) -S(omit debug info)
 # -x(discard all local symbols) -M(print memory map)
-LDFLAGS = -Ttext 0 -e startup_32 --oformat binary -s -S -x -M
+LDFLAGS = -Ttext 0 -e startup_32 --oformat binary -s -S -x -M -m elf_i386
 
 # -Ttext org -e entry -M(print memory map)
-LDFLAGS2= -Ttext 0 -e startup_32 -x
+LDFLAGS2= -Ttext 0 -e startup_32 -x -m elf_i386
 
 AR 	= ar
 ARFLAGS = rcs
@@ -164,8 +164,9 @@ commit:
 docker:
 	# @docker rm -f /$$(docker ps -a | grep "cdai/minios" | awk '{print $1}')
 	# @docker rmi cdai/minios
-	@docker build --force-rm -t cdai/minios .
+	@cat Dockerfile | envsubst > Dockerfile.tmp | docker build --force-rm -t cdai/minios -f Dockerfile.tmp .
 	@docker run -i -t cdai/minios /bin/bash
+	@rm -f Dockerfile.tmp
 
 #################
 # Clean
@@ -178,6 +179,34 @@ clean:
 	rm -f a.bin tmp.asm System.map
 
 .PHONY: clean
+
+
+#################
+# Help
+#################
+
+help:
+	@echo "<<<<This is the basic help info of MiniOS>>>"
+	@echo ""
+	@echo "Usage:"
+	@echo "     make        -- build project"
+	@echo "     make disk   -- generate a kernel floppy Image with a fs on hda1"
+	@echo "     make dep    -- generate dependency to the tail of Makefile"
+	@echo "     make start  -- start the kernel in bochs"
+	@echo "     make sysmap -- print symbol address in System.map"
+	@echo "     make debug  -- debug the kernel in bochs & gdb at port 1234"
+	@echo "     make disasm -- disassemble boot1/2(disasm-b1/2), system(disasm-sys)"
+	@echo "     make commit -- commit changes to git"
+	@echo "     make docker -- generate docker image and start container"
+	@echo "     make clean  -- clean all temp files"
+	@echo ""
+	@echo "Author:"
+	@echo "     * 1991, linus write and release the original linux 0.95(linux 0.11)."
+	@echo "     * 2005, cdai<dc_726@163.com> release a new version for fun."
+	@echo ""
+	@echo "<<<Be Happy To Play With It :-)>>>"
+
+.PHONY: help
 
 
 ### Dependencies
