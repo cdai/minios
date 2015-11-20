@@ -157,6 +157,17 @@ commit:
 
 
 #################
+# Docker
+#################
+
+# remove container and images if exist, then rebuild and run
+docker:
+	# @docker rm -f /$$(docker ps -a | grep "cdai/minios" | awk '{print $1}')
+	# @docker rmi cdai/minios
+	@docker build --force-rm -t cdai/minios .
+	@docker run -i -t cdai/minios /bin/bash
+
+#################
 # Clean
 #################
 
