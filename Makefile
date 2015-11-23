@@ -10,7 +10,8 @@ LD 	= ld
 
 ASFLAGS	= -f elf -g
 # -fomit-frame-pointer is for embedded asm
-CFLAGS	= -g -I include/ -m32 -fno-builtin -fomit-frame-pointer -fstrength-reduce
+# CFLAGS	= -g -I include/ -m32 -fno-builtin -fomit-frame-pointer -fstrength-reduce
+CFLAGS = -g -I include/ -m32 -O
 
 # -Ttext org -e entry 
 # -s(omit all symbol info) -S(omit debug info)
@@ -119,7 +120,7 @@ qemu: 	Image
 gdb: 	Image system/system-gdb
 	@nohup ./bochs -q -f bochsrc-gdb > /dev/null &
 	@sleep 2
-	@gdb -tui system/system-gdb
+	@gdb -tui -iex 'add-auto-load-safe-path .' system/system-gdb
 
 # match .text until blank line, then filter out .text and *fill*...
 sysmap: System.map
@@ -162,11 +163,11 @@ commit:
 
 # remove container and images if exist, then rebuild and run
 docker:
-	# @docker rm -f /$$(docker ps -a | grep "cdai/minios" | awk '{print $1}')
-	# @docker rmi cdai/minios
+	@docker ps -a | grep "cdai/minios" | awk '{print $$1}' | xargs -r docker rm -f 
+	@docker images | grep "^<none>" | awk '{print $$3}' | xargs -r docker rmi 
 	@cat Dockerfile | envsubst > Dockerfile.tmp | docker build --force-rm -t cdai/minios -f Dockerfile.tmp .
-	@docker run -i -t cdai/minios /bin/bash
 	@rm -f Dockerfile.tmp
+	@docker run -i -t cdai/minios /bin/bash
 
 #################
 # Clean
