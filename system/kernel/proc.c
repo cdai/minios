@@ -121,12 +121,32 @@ int copy_process(int nr, long ebp, long edi, long esi, long gs,
 	task[nr] = p;
 
 	//*p = *current;
+	p->state = TASK_UNINTERRUPTIBLE;
 	p->pid = last_pid;
-
 	p->tss.back_link = 0;
 	p->tss.esp0 = PAGE_SIZE + (long) p;
 	p->tss.ss0 = 0x10;
+	p->tss.eip = eip;
+	p->tss.eflags = eflags;
+	p->tss.eax = 0;
+	p->tss.ecx = ecx;
+	p->tss.edx = edx;
+	p->tss.ebx = ebx;
+	p->tss.esp = esp;
+	p->tss.ebp = ebp;
+	p->tss.esi = esi;
+	p->tss.edi = edi;
+	p->tss.es = es & 0xffff;
+	p->tss.cs = cs & 0xffff;
+	p->tss.ss = ss & 0xffff;
+	p->tss.ds = ds & 0xffff;
+	p->tss.fs = fs & 0xffff;
+	p->tss.gs = gs & 0xffff;
+	p->tss.trace_bitmap = 0x80000000;
 
-	return 0;
+	set_tss_desc(gdt+(nr<<1)+FIRST_TSS_ENTRY,&(p->tss));
+	set_ldt_desc(gdt+(nr<<1)+FIRST_LDT_ENTRY,&(p->ldt));
+	p->state = TASK_RUNNING;
+	return last_pid;
 }
 
