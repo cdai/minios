@@ -37,6 +37,9 @@ struct tss_struct {
 
 struct task_struct {
 	u32 	state;
+	long 	counter;
+	long 	priority;
+	long 	start_time;
 	u32 	pid;
 	u32 	father;
 	struct desc_struct ldt[3];
@@ -60,6 +63,9 @@ struct task_struct {
 #define INIT_TASK 			\
 {                       		\
 /* state */	TASK_RUNNING, 		\
+/* counter */ 	15, 			\
+/* priority */ 	15, 			\
+/* start_time */0, 			\
 /* pid */ 	0, 			\
 /* father */ 	0, 			\
 		/***** LDT *****/ 	\
@@ -88,6 +94,8 @@ struct task_struct {
 extern struct task_struct *task[NR_TASKS];
 extern struct task_struct *current;
 
+#define FIRST_TASK task[0]
+#define LAST_TASK task[NR_TASKS-1]
 
 #define FIRST_TSS_ENTRY 4
 #define FIRST_LDT_ENTRY (FIRST_TSS_ENTRY+1)

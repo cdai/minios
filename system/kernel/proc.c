@@ -83,6 +83,26 @@ void sched_init()
 	set_system_gate(0x80, &system_call);
 }
 
+void schedule()
+{
+	int i, c, next;
+
+	c = -1;
+	next = 0;
+
+	// Find running process with max counter
+	for (i = NR_TASKS; i >= 0; i--) {
+		if (task[i] && task[i]->state == TASK_RUNNING && task[i]->counter > c) {
+			c = task[i]->counter;
+			next = i;
+		}
+	}
+
+	// Ignore the case of no running process...
+
+	switch_to(next);
+}
+
 int find_empty_process(void)
 {
 	int i;
@@ -122,7 +142,9 @@ int copy_process(int nr, long ebp, long edi, long esi, long gs,
 
 	*p = *current;
 	p->state = TASK_UNINTERRUPTIBLE;
+	p->counter = p->priority;
 	p->pid = last_pid;
+	p->start_time = jiffies;
 
 	p->tss.back_link = 0;
 	p->tss.esp0 = PAGE_SIZE + (long) p;
