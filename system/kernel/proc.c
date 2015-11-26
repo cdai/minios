@@ -120,9 +120,10 @@ int copy_process(int nr, long ebp, long edi, long esi, long gs,
 	p = (struct task_struct *) get_free_page();
 	task[nr] = p;
 
-	//*p = *current;
+	*p = *current;
 	p->state = TASK_UNINTERRUPTIBLE;
 	p->pid = last_pid;
+
 	p->tss.back_link = 0;
 	p->tss.esp0 = PAGE_SIZE + (long) p;
 	p->tss.ss0 = 0x10;
@@ -142,6 +143,7 @@ int copy_process(int nr, long ebp, long edi, long esi, long gs,
 	p->tss.ds = ds & 0xffff;
 	p->tss.fs = fs & 0xffff;
 	p->tss.gs = gs & 0xffff;
+	p->tss.ldt = _LDT(nr);
 	p->tss.trace_bitmap = 0x80000000;
 
 	set_tss_desc(gdt+(nr<<1)+FIRST_TSS_ENTRY,&(p->tss));
