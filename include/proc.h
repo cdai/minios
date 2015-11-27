@@ -103,6 +103,17 @@ extern struct task_struct *current;
 #define _LDT(n) ((((unsigned long) n)<<4)+(FIRST_LDT_ENTRY<<3))
 #define ltr(n) __asm__("ltr %%ax"::"a" (_TSS(n)))
 #define lldt(n) __asm__("lldt %%ax"::"a" (_LDT(n)))
+#define switch_to(n) { 			\
+	struct {long a,b;} __tmp; 	\
+	__asm__("cmpl %%ecx,current\n\t"\
+		"je 1f\n\t" 		\
+		"movw %%dx,%1\n\t" 	\
+		"xchgl %%ecx,current\n\t" \
+		"ljmp *%0\n\t" 		\
+		"1:\n" 			\
+		::"m" (*&__tmp.a),"m" (*&__tmp.b), \
+		"d" (_TSS(n)),"c" ((long) task[n])); \
+}
 
 
 /****************************************/
